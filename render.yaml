@@ -2,10 +2,25 @@ services:
   - type: web
     name: power-ms-trading-pro-backend
     env: python
+    region: frankfurt  # أو أي منطقة قريبة منك
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    startCommand: "gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
       - key: PORT
         value: 10000
+      - key: BINANCE_API_KEY
+        sync: false  # سيطلب منك إدخاله يدوياً
+      - key: BINANCE_API_SECRET
+        sync: false  # سيطلب منك إدخاله يدوياً
+      - key: DATABASE_URL
+        fromDatabase:
+          name: power-ms-trading-db
+          property: connectionString
+
+databases:
+  - name: power-ms-trading-db
+    databaseName: power_ms_trading
+    user: power_ms_user
+    plan: free  # يمكنك تغيير الخطة لاحقاً إذا احتجت
