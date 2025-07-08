@@ -8,6 +8,29 @@ import './App.css';
 // Base URL للـ API
 const API_BASE_URL = 'https://power-ms-trading-pro-1.onrender.com';
 
+// أزواج التداول المتاحة
+const tradingPairs = [
+  { symbol: 'BTC/USDT', base: 'BTC', quote: 'USDT', status: 'active' },
+  { symbol: 'ETH/USDT', base: 'ETH', quote: 'USDT', status: 'active' },
+  { symbol: 'BNB/USDT', base: 'BNB', quote: 'USDT', status: 'active' },
+  { symbol: 'SOL/USDT', base: 'SOL', quote: 'USDT', status: 'active' },
+  { symbol: 'XRP/USDT', base: 'XRP', quote: 'USDT', status: 'active' },
+  { symbol: 'ADA/USDT', base: 'ADA', quote: 'USDT', status: 'active' },
+];
+
+// الاستراتيجيات المتاحة
+const strategies = [
+  { id: 1, name: 'RSI + MACD', description: 'جمع بين مؤشر RSI و MACD' },
+  { id: 2, name: 'Bollinger Bands', description: 'تداول عند اختراق النطاقات' },
+  { id: 3, name: 'Moving Average Crossover', description: 'تقاطع المتوسطات المتحركة' },
+];
+
+// إشارات التداول الحية
+const liveSignals = [
+  { id: 1, pair: 'BTC/USDT', strategy: 'RSI + MACD', signal: 'BUY', price: '42,350.25', time: '10:30:45', strength: 'strong' },
+  { id: 2, pair: 'ETH/USDT', strategy: 'Bollinger Bands', signal: 'SELL', price: '2,345.67', time: '11:15:22', strength: 'medium' },
+];
+
 // بيانات تجريبية للرسم البياني
 const sampleData = [
   { name: 'Jan', profit: 400 },
@@ -16,12 +39,6 @@ const sampleData = [
   { name: 'Apr', profit: 800 },
   { name: 'May', profit: 500 },
   { name: 'Jun', profit: 900 },
-];
-
-// صفقات تجريبية
-const sampleTrades = [
-  { id: 1, pair: 'BTC/USDT', type: 'BUY', price: '42,350.25', amount: '0.05', total: '2,117.51', time: '10:30:45' },
-  { id: 2, pair: 'ETH/USDT', type: 'SELL', price: '2,345.67', amount: '0.5', total: '1,172.84', time: '11:15:22' },
 ];
 
 function App() {
@@ -34,6 +51,9 @@ function App() {
   const [botStatus, setBotStatus] = useState('stopped');
   const [balances, setBalances] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedPair, setSelectedPair] = useState('BTC/USDT');
+  const [selectedStrategy, setSelectedStrategy] = useState('RSI + MACD');
 
   const activate = async () => {
     setIsLoading(true);
@@ -171,6 +191,34 @@ function App() {
       </header>
 
       <div className="app-container">
+        <div className="tabs">
+          <button 
+            className={`tab ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            لوحة التحكم
+          </button>
+          <button 
+            className={`tab ${activeTab === 'pairs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pairs')}
+          >
+            أزواج التداول
+          </button>
+          <button 
+            className={`tab ${activeTab === 'strategies' ? 'active' : ''}`}
+            onClick={() => setActiveTab('strategies')}
+          >
+            الاستراتيجيات
+          </button>
+          <button 
+            className={`tab ${activeTab === 'signals' ? 'active' : ''}`}
+            onClick={() => setActiveTab('signals')}
+          >
+            إشارات التداول
+          </button>
+        </div>
+
+        {activeTab === 'dashboard' && (
         {!isActivated ? (
           <div className="activation-container">
             <h2><FaInfoCircle /> Activation Requise</h2>
@@ -350,6 +398,67 @@ function App() {
                   <p className="no-balance">Aucun solde disponible</p>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+        )}
+
+        {activeTab === 'pairs' && (
+          <div className="pairs-container">
+            <h2>أزواج التداول المتاحة</h2>
+            <div className="pairs-grid">
+              {tradingPairs.map((pair) => (
+                <div key={pair.symbol} className="pair-card">
+                  <h3>{pair.symbol}</h3>
+                  <p>العملة الأساسية: {pair.base}</p>
+                  <p>عملة التسعير: {pair.quote}</p>
+                  <span className={`status ${pair.status}`}>{pair.status === 'active' ? 'نشط' : 'غير نشط'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'strategies' && (
+          <div className="strategies-container">
+            <h2>الاستراتيجيات المتاحة</h2>
+            <div className="strategies-grid">
+              {strategies.map((strategy) => (
+                <div key={strategy.id} className="strategy-card">
+                  <h3>{strategy.name}</h3>
+                  <p>{strategy.description}</p>
+                  <button 
+                    className={`btn ${selectedStrategy === strategy.name ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => setSelectedStrategy(strategy.name)}
+                  >
+                    {selectedStrategy === strategy.name ? 'محدد' : 'تحديد'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'signals' && (
+          <div className="signals-container">
+            <h2>إشارات التداول الحية</h2>
+            <div className="signals-list">
+              {liveSignals.map((signal) => (
+                <div key={signal.id} className={`signal-card ${signal.signal.toLowerCase()}`}>
+                  <div className="signal-header">
+                    <span className="pair">{signal.pair}</span>
+                    <span className={`signal ${signal.signal.toLowerCase()}`}>
+                      {signal.signal === 'BUY' ? 'شراء' : 'بيع'}
+                    </span>
+                  </div>
+                  <div className="signal-details">
+                    <p>الاستراتيجية: {signal.strategy}</p>
+                    <p>السعر: {signal.price} USDT</p>
+                    <p>القوة: {signal.strength === 'strong' ? 'قوية' : 'متوسطة'}</p>
+                  </div>
+                  <div className="signal-time">{signal.time}</div>
+                </div>
+              ))}
             </div>
           </div>
         )}

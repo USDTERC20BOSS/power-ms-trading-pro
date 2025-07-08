@@ -29,6 +29,10 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Power MS Trading Pro Backend")
 
+@app.get("/")
+async def root():
+    return {"message": "Power MS Trading Pro API is running", "status": "active"}
+
 # إضافة CORS middleware
 app.add_middleware(
     CORSMiddleware,
