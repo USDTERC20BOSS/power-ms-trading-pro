@@ -12,7 +12,7 @@ function App() {
   const [balances, setBalances] = useState([]);
 
   const activate = async () => {
-    const res = await fetch('http://localhost:8000/activate', {
+    const res = await fetch('', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ activation_code: activationCode })
@@ -23,7 +23,7 @@ function App() {
   };
 
   const fetchSettings = async () => {
-    const res = await fetch('http://localhost:8000/get_settings');
+    const res = await fetch('https://power-ms-trading-pro-1.onrender.com/activate');
     const data = await res.json();
     setApiKey(data.api_key || '');
     setApiSecret(data.api_secret || '');
