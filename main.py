@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import json
-from python_binance.client import Client
+from binance.client import Client
 import pandas as pd
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./power_ms.db"
