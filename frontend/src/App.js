@@ -8,6 +8,16 @@ import './App.css';
 // Base URL للـ API
 const API_BASE_URL = 'https://power-ms-trading-pro-1.onrender.com';
 
+// نقاط النهاية
+const ENDPOINTS = {
+  ACTIVATE: `${API_BASE_URL}/activate`,
+  UPDATE_SETTINGS: `${API_BASE_URL}/update_settings`,
+  GET_SETTINGS: `${API_BASE_URL}/get_settings`,
+  BOT_STATUS: `${API_BASE_URL}/bot_status`,
+  BINANCE_BALANCE: `${API_BASE_URL}/binance_balance`,
+  PREDICT_SIGNAL: `${API_BASE_URL}/predict_signal`
+};
+
 // أزواج التداول المتاحة
 const tradingPairs = [
   { symbol: 'BTC/USDT', base: 'BTC', quote: 'USDT', status: 'active' },
@@ -58,7 +68,7 @@ function App() {
   const activate = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/activate`, {
+      const res = await fetch(ENDPOINTS.ACTIVATE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activation_code: activationCode })
@@ -81,10 +91,11 @@ function App() {
     }
   };
 
-  const updateSettings = async () => {
+  const updateApiKeys = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/update_settings`, {
+      const res = await fetch(ENDPOINTS.UPDATE_SETTINGS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -113,7 +124,7 @@ function App() {
     setIsLoading(true);
     setMessage(`Mise à jour du statut en cours...`);
     try {
-      const res = await fetch(`${API_BASE_URL}/bot_status`, {
+      const res = await fetch(ENDPOINTS.BOT_STATUS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
@@ -139,7 +150,7 @@ function App() {
   const fetchBalance = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/binance_balance`);
+      const res = await fetch(ENDPOINTS.BINANCE_BALANCE);
       const data = await res.json();
       
       if (res.ok) {
@@ -159,9 +170,21 @@ function App() {
 
   useEffect(() => {
     // Vérifier l'état d'activation au chargement
+    const fetchBalances = async () => {
+      try {
+        const res = await fetch(ENDPOINTS.BINANCE_BALANCE);
+        const data = await res.json();
+        if (res.ok) {
+          setBalances(data.balances || []);
+        }
+      } catch (error) {
+        console.error('Erreur de récupération du solde:', error);
+      }
+    };
+    
     const checkActivation = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/check_activation`);
+        const res = await fetch(ENDPOINTS.GET_SETTINGS);
         const data = await res.json();
         if (res.ok && data.activated) {
           setIsActivated(true);
