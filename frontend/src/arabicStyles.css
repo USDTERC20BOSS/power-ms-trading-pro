@@ -1,0 +1,158 @@
+/* تحسينات النصوص العربية */
+.arabic-text {
+  font-family: 'Tajawal', sans-serif;
+  line-height: 1.8;
+  text-align: right;
+  direction: rtl;
+}
+
+/* تحسين العناوين */
+h1.arabic-text, 
+h2.arabic-text, 
+h3.arabic-text, 
+h4.arabic-text, 
+h5.arabic-text, 
+h6.arabic-text {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+/* تحسين الفقرات */
+p.arabic-text {
+  margin-bottom: 1rem;
+  line-height: 1.8;
+}
+
+/* تحسين القوائم */
+ul.arabic-text,
+ol.arabic-text {
+  padding-right: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* تحسين الجداول */
+table.arabic-text {
+  direction: rtl;
+  text-align: right;
+}
+
+table.arabic-text th,
+table.arabic-text td {
+  text-align: right;
+  padding: 0.75rem;
+}
+
+/* تحسين النماذج */
+.form-group.arabic-text {
+  text-align: right;
+  margin-bottom: 1.25rem;
+}
+
+.form-group.arabic-text label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+/* تحسين الأزرار */
+button.arabic-text {
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0 !important;
+}
+
+/* تحسين حقول الإدخال */
+input.arabic-text,
+select.arabic-text,
+textarea.arabic-text {
+  font-family: 'Tajawal', sans-serif;
+  text-align: right;
+  direction: rtl;
+}
+
+/* تحسين البطاقات */
+.card.arabic-text {
+  text-align: right;
+  direction: rtl;
+}
+
+/* تحسين التنقل */
+.nav.arabic-text {
+  padding-right: 0;
+}
+
+.nav.arabic-text .nav-item {
+  margin-left: 1.5rem;
+  margin-right: 0;
+}
+
+/* تحسين التبويبات */
+.nav-tabs.arabic-text {
+  padding-right: 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.nav-tabs.arabic-text .nav-link {
+  border: 1px solid transparent;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+/* تحسين التنبيهات */
+.alert.arabic-text {
+  text-align: right;
+  direction: rtl;
+}
+
+/* تحسين البطاقات */
+.card.arabic-text .card-header {
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 0;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  text-align: right;
+}
+
+/* تحسين القوائم المنسدلة */
+.dropdown-menu.arabic-text {
+  text-align: right;
+  right: 0;
+  left: auto;
+}
+
+/* تحسين شريط التمرير */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* تحسينات للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .arabic-text {
+    font-size: 0.95rem;
+  }
+  
+  h1.arabic-text { font-size: 1.75rem; }
+  h2.arabic-text { font-size: 1.5rem; }
+  h3.arabic-text { font-size: 1.25rem; }
+  h4.arabic-text { font-size: 1.1rem; }
+  h5.arabic-text { font-size: 1rem; }
+  h6.arabic-text { font-size: 0.9rem; }
+}

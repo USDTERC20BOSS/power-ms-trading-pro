@@ -1,0 +1,63 @@
+/* Tajawal Font - Regular */
+@font-face {
+  font-family: 'Tajawal';
+  src: url('https://fonts.gstatic.com/s/tajawal/v9/Iurf6YBj_oCad4k1l5qjHrFpiU.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tajawal Font - Medium */
+@font-face {
+  font-family: 'Tajawal';
+  src: url('https://fonts.gstatic.com/s/tajawal/v9/Iurf6YBj_oCad4k1l5qjHrFpiU.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tajawal Font - Bold */
+@font-face {
+  font-family: 'Tajawal';
+  src: url('https://fonts.gstatic.com/s/tajawal/v9/Iurf6YBj_oCad4k1l5qjHrFpiU.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* تطبيق الخط على العناصر */
+body {
+  font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* تحسين مظهر النصوص العربية */
+* {
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+}
+
+/* تحسين التباعد بين الحروف للغة العربية */
+h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select, label {
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  line-height: 1.8;
+}
+
+/* تحسين مظهر الأزرار */
+button {
+  font-family: 'Tajawal', sans-serif;
+}
+
+/* تحسين مظهر حقول الإدخال */
+input, textarea, select {
+  font-family: 'Tajawal', sans-serif;
+}
+
+/* تحسين مظهر العناوين */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 700;
+}

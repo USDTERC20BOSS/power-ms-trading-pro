@@ -6,6 +6,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import RiskManagementPanel from './components/RiskManagementPanel';
 
+// استيراد خط Tajawal للغة العربية
+import './fonts/Tajawal.css';
+
 // Base URL للـ API - سيتم تعيينه من متغير البيئة أو استخدام الرابط الافتراضي
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://power-ms-trading-pro-backend.onrender.com';
 
@@ -20,6 +23,20 @@ const ENDPOINTS = {
   GET_PAIRS: `${API_BASE_URL}/get_pairs`,
   PREDICT_SIGNAL: `${API_BASE_URL}/predict_signal`,
   UPDATE_RISK_SETTINGS: `${API_BASE_URL}/update_risk_settings`
+};
+
+// تكوين Toastify للغة العربية
+const toastSettings = {
+  position: "top-left",
+  rtl: true,
+  autoClose: 5000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
+  theme: "dark",
+  className: 'font-tajawal'
 };
 
 function App() {
@@ -96,8 +113,11 @@ function App() {
     try {
       setIsLoading(true);
       
-      if (!selectedStrategy || selectedPairs.length === 0) {
-        throw new Error('الرجاء اختيار استراتيجية و زوج تداول واحد على الأقل');
+      // طلب رمز التفعيل من المستخدم
+      const activationCode = prompt('الرجاء إدخال رمز التفعيل:');
+      
+      if (!activationCode) {
+        throw new Error('يجب إدخال رمز التفعيل');
       }
       
       const response = await fetch(ENDPOINTS.ACTIVATE, {
@@ -106,10 +126,7 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          api_key: apiKey,
-          api_secret: apiSecret,
-          strategy: selectedStrategy,
-          pairs: selectedPairs,
+          activation_code: activationCode,
         }),
       });
       
@@ -136,19 +153,21 @@ function App() {
     try {
       setIsLoading(true);
       
+      // استخدام نفس نقطة نهاية التفعيل مع معلمة deactivate
       const response = await fetch(ENDPOINTS.ACTIVATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: 'stop'
+          action: 'deactivate'
         }),
       });
       
       const data = await response.json();
       
       if (response.ok) {
+        setIsActivated(false);
         setBotStatus('stopped');
         toast.success('تم إيقاف البوت بنجاح');
       } else {
@@ -342,7 +361,20 @@ function App() {
   );
 
   return (
-    <div className="app">
+    <div className="app" dir="rtl">
+      <ToastContainer 
+        position="top-left"
+        rtl={true}
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        className="font-tajawal"
+      />
       <header className="app-header">
         <h1>
           <FaChartLine className="logo-icon" />
