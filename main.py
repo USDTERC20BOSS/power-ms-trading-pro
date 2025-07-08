@@ -1,18 +1,26 @@
+# -*- coding: utf-8 -*-
+import os
+import json
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-import json
+from sqlalchemy.orm import sessionmaker, scoped_session, Session
 from binance.client import Client
 import pandas as pd
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./power_ms.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# تكوين قاعدة البيانات
+DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///./power_ms.db')
 
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+# تعديل رابط PostgreSQL ليتوافق مع SQLAlchemy
+if DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=300)
+SessionLocal = scoped_session(sessionmaker(bind=engine, autocommit=False, autoflush=False))
 Base = declarative_base()
+Base.query = SessionLocal.query_property()
 
 class User(Base):
     __tablename__ = "users"
@@ -27,6 +35,7 @@ class User(Base):
 
 Base.metadata.create_all(bind=engine)
 
+# استيراد مسارات إدارة المخاطر
 app = FastAPI(title="Power MS Trading Pro Backend")
 
 @app.get("/")
@@ -170,4 +179,5 @@ def predict_signal(prices: list):
 # إضافة نقطة الدخول الرئيسية لتشغيل الخادم
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
