@@ -5,17 +5,17 @@ services:
     region: frankfurt  # أو أي منطقة قريبة منك
     buildCommand: |
       python -m pip install --upgrade pip setuptools wheel
-      pip install -r requirements.txt
+      pip install --no-cache-dir -r requirements.txt
     startCommand: "gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.0
+        value: 3.10.12
       - key: PYTHONUNBUFFERED
         value: 1
       - key: PYTHONDONTWRITEBYTECODE
         value: 1
       - key: PYTHONPATH
-        value: "/opt/render/project/src:/opt/render/project/src/.venv/lib/python3.9/site-packages"
+        value: "/opt/render/project/src"
       - key: PORT
         value: 10000
       - key: BINANCE_API_KEY
@@ -26,6 +26,10 @@ services:
         fromDatabase:
           name: power-ms-trading-db
           property: connectionString
+      - key: PYTHON_SETUPTOOLS_VERSION
+        value: "65.5.1"
+      - key: PIP_DISABLE_PIP_VERSION_CHECK
+        value: "1"
 
 databases:
   - name: power-ms-trading-db
