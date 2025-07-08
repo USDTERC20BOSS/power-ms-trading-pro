@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# تحديث pip
+python -m pip install --upgrade pip
+
+# تثبيت setuptools و wheel
+pip install --upgrade setuptools wheel
+
 # تثبيت المتطلبات
 pip install -r requirements.txt
 
@@ -7,4 +13,4 @@ pip install -r requirements.txt
 mkdir -p static
 
 # تشغيل الخادم باستخدام Gunicorn
-uvicorn main:app --host 0.0.0.0 --port $PORT --workers 4 --worker-class uvicorn.workers.UvicornWorker
+exec gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT
