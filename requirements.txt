@@ -6,5 +6,4 @@ pydantic
 pandas
 numpy
 python-multipart
-python-binance
 python-binance==1.0.29
