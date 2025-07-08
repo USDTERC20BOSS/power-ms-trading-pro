@@ -1,5 +1,5 @@
-
 from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -28,6 +28,15 @@ class User(Base):
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Power MS Trading Pro Backend")
+
+# إضافة CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # للاختبار فقط، استبدلها بالنطاق الفعلي لاحقاً
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ActivationRequest(BaseModel):
     activation_code: str
