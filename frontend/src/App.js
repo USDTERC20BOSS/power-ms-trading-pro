@@ -6,13 +6,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import RiskManagementPanel from './components/RiskManagementPanel';
 
-// استيراد خط Tajawal للغة العربية
-import './fonts/Tajawal.css';
+// URL de base de l'API - peut être défini par une variable d'environnement ou utiliser l'URL par défaut
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://power-ms-trading-pro.onrender.com';
 
-// Base URL للـ API - سيتم تعيينه من متغير البيئة أو استخدام الرابط الافتراضي
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://power-ms-trading-pro-backend.onrender.com';
-
-// نقاط النهاية
+// Points de terminaison de l'API
 const ENDPOINTS = {
   ACTIVATE: `${API_BASE_URL}/activate`,
   UPDATE_SETTINGS: `${API_BASE_URL}/update_settings`,
@@ -25,105 +22,105 @@ const ENDPOINTS = {
   UPDATE_RISK_SETTINGS: `${API_BASE_URL}/update_risk_settings`
 };
 
-// تكوين Toastify للغة العربية
+// Configuration de Toastify pour les notifications
 const toastSettings = {
-  position: "top-left",
-  rtl: true,
+  position: "top-right",
   autoClose: 5000,
   hideProgressBar: false,
   closeOnClick: true,
   pauseOnHover: true,
   draggable: true,
   progress: undefined,
-  theme: "dark",
-  className: 'font-tajawal'
+  theme: "dark"
 };
 
 function App() {
-  // حالة التفعيل والمصادقة
+  // État d'activation et d'authentification
   const [activationCode, setActivationCode] = useState('');
   const [message, setMessage] = useState('');
   const [isActivated, setIsActivated] = useState(false);
   
-  // حالة التحميل والواجهة
+  // État de chargement et interface utilisateur
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  
-  // حالة التداول
-  const [tradingPairs, setTradingPairs] = useState([]);
-  const [strategies, setStrategies] = useState([]);
-  const [selectedPairs, setSelectedPairs] = useState([]);
-  const [selectedStrategy, setSelectedStrategy] = useState('');
   const [botStatus, setBotStatus] = useState('stopped');
   
-  // التنبيهات والإشعارات
-  const [alerts, setAlerts] = useState([]);
-  const [alertSound] = useState(new Audio('https://www.soundjay.com/buttons/button-09a.mp3'));
-  
-  // مفاتيح API
+  // Paramètres de trading
   const [apiKey, setApiKey] = useState('');
   const [apiSecret, setApiSecret] = useState('');
+  const [selectedStrategy, setSelectedStrategy] = useState('');
+  const [tradingPairs, setTradingPairs] = useState([]);
+  const [selectedPairs, setSelectedPairs] = useState([]);
+  const [strategies, setStrategies] = useState([]);
   
-  // أرصدة المحفظة
-  const [balances, setBalances] = useState([]);
+  // Gestion des risques
+  const [takeProfit, setTakeProfit] = useState(2);
+  const [stopLoss, setStopLoss] = useState(1);
+  const [maxRisk, setMaxRisk] = useState(1);
+  const [trailingStop, setTrailingStop] = useState(false);
+  
+  // Alertes
+  const [alerts, setAlerts] = useState([]);
+  
+  // Solde et bénéfices
+  const [balance, setBalance] = useState(0);
+  const [profit, setProfit] = useState(0);
+  const [trades, setTrades] = useState([]);
 
-  // تأثير لجلب البيانات الأولية
+  // Effet pour charger les données initiales
   useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Récupérer les stratégies disponibles
+        const strategiesRes = await fetch(ENDPOINTS.GET_STRATEGIES);
+        if (!strategiesRes.ok) throw new Error('Échec du chargement des stratégies');
+        const strategiesData = await strategiesRes.json();
+        setStrategies(strategiesData.strategies || []);
+        
+        // Récupérer les paires de trading disponibles
+        const pairsRes = await fetch(ENDPOINTS.GET_PAIRS);
+        if (!pairsRes.ok) throw new Error('Échec du chargement des paires de trading');
+        const pairsData = await pairsRes.json();
+        setTradingPairs(pairsData.pairs || []);
+        
+        // Récupérer l'état actuel du bot
+        const statusRes = await fetch(ENDPOINTS.BOT_STATUS);
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          setBotStatus(statusData.status || 'stopped');
+          setIsActivated(statusData.activated || false);
+        }
+        
+      } catch (error) {
+        console.error('Erreur lors du chargement des données initiales:', error);
+        toast.error(error.message || 'Une erreur est survenue lors du chargement des données');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
     fetchInitialData();
   }, []);
 
-  // دالة لجلب البيانات الأولية
-  const fetchInitialData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // جلب قائمة الاستراتيجيات المتاحة
-      const strategiesRes = await fetch(ENDPOINTS.GET_STRATEGIES);
-      const strategiesData = await strategiesRes.json();
-      if (strategiesRes.ok) {
-        setStrategies(strategiesData.strategies || []);
-      }
-      
-      // جلب قائمة الأزواج المتاحة
-      const pairsRes = await fetch(ENDPOINTS.GET_PAIRS);
-      const pairsData = await pairsRes.json();
-      if (pairsRes.ok) {
-        setTradingPairs(pairsData.pairs || []);
-      }
-      
-      // جلب حالة البوت الحالية
-      const statusRes = await fetch(ENDPOINTS.BOT_STATUS);
-      const statusData = await statusRes.json();
-      if (statusRes.ok) {
-        setBotStatus(statusData.status || 'stopped');
-        setSelectedStrategy(statusData.strategy || '');
-        setSelectedPairs(statusData.pairs || []);
-      }
-      
-    } catch (error) {
-      console.error('Error fetching initial data:', error);
-      toast.error('حدث خطأ أثناء جلب البيانات الأولية');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // دالة تفعيل البوت
+  // Fonction pour activer le bot
   const activateBot = async () => {
     try {
       setIsLoading(true);
       
-      // طلب رمز التفعيل من المستخدم
-      const activationCode = prompt('الرجاء إدخال رمز التفعيل:');
+      // Demander le code d'activation à l'utilisateur
+      const activationCode = prompt('Veuillez entrer le code d\'activation:');
       
       if (!activationCode) {
-        throw new Error('يجب إدخال رمز التفعيل');
+        throw new Error('Le code d\'activation est requis');
       }
       
       const response = await fetch(ENDPOINTS.ACTIVATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept-Language': 'fr'
         },
         body: JSON.stringify({
           activation_code: activationCode,
@@ -135,29 +132,30 @@ function App() {
       if (response.ok) {
         setIsActivated(true);
         setBotStatus('running');
-        toast.success('تم تفعيل البوت بنجاح');
+        toast.success('Bot activé avec succès');
       } else {
-        throw new Error(data.detail || 'فشل في تفعيل البوت');
+        throw new Error(data.detail || 'Échec de l\'activation du bot');
       }
       
     } catch (error) {
-      console.error('Error activating bot:', error);
-      toast.error(error.message || 'حدث خطأ أثناء تفعيل البوت');
+      console.error('Erreur lors de l\'activation du bot:', error);
+      toast.error(error.message || 'Une erreur est survenue lors de l\'activation du bot');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // دالة إيقاف البوت
+  // Fonction pour arrêter le bot
   const stopBot = async () => {
     try {
       setIsLoading(true);
       
-      // استخدام نفس نقطة نهاية التفعيل مع معلمة deactivate
+      // Utiliser le même point de terminaison avec l'action de désactivation
       const response = await fetch(ENDPOINTS.ACTIVATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept-Language': 'fr'
         },
         body: JSON.stringify({
           action: 'deactivate'
@@ -169,30 +167,81 @@ function App() {
       if (response.ok) {
         setIsActivated(false);
         setBotStatus('stopped');
-        toast.success('تم إيقاف البوت بنجاح');
+        toast.success('Bot arrêté avec succès');
       } else {
-        throw new Error(data.detail || 'فشل في إيقاف البوت');
+        throw new Error(data.detail || 'Échec de l\'arrêt du bot');
       }
       
     } catch (error) {
-      console.error('Error stopping bot:', error);
-      toast.error(error.message || 'حدث خطأ أثناء إيقاف البوت');
+      console.error('Erreur lors de l\'arrêt du bot:', error);
+      toast.error(error.message || 'Une erreur est survenue lors de l\'arrêt du bot');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // مكون واجهة المستخدم لإدارة المخاطر
-  const RiskManagementPanelComponent = () => (
-    <RiskManagementPanel apiBaseUrl={API_BASE_URL} />
+  // Composant de gestion des risques
+  const RiskManagementPanel = () => (
+    <div className="risk-management">
+      <h2>Gestion des risques</h2>
+      <div className="risk-settings">
+        <div className="form-group">
+          <label>Objectif de profit (%)</label>
+          <input 
+            type="number" 
+            value={takeProfit} 
+            onChange={(e) => setTakeProfit(e.target.value)} 
+            min="0" 
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label>Stop-loss (%)</label>
+          <input 
+            type="number" 
+            value={stopLoss} 
+            onChange={(e) => setStopLoss(e.target.value)} 
+            min="0" 
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label>Risque maximum (%)</label>
+          <input 
+            type="number" 
+            value={maxRisk} 
+            onChange={(e) => setMaxRisk(e.target.value)} 
+            min="0" 
+            max="100" 
+            step="1"
+          />
+        </div>
+        <div className="form-group checkbox-group">
+          <input 
+            type="checkbox" 
+            id="trailingStop" 
+            checked={trailingStop} 
+            onChange={(e) => setTrailingStop(e.target.checked)} 
+          />
+          <label htmlFor="trailingStop">Stop-loss suiveur</label>
+        </div>
+        <button 
+          className="btn btn-primary" 
+          onClick={handleSaveSettings}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Enregistrement...' : 'Enregistrer les paramètres'}
+        </button>
+      </div>
+    </div>
   );
 
-  // مكون لوحة التحكم الرئيسية
+  // Tableau de bord principal
   const DashboardPanel = () => (
     <div className="dashboard-panel">
       <div className="status-card">
-        <h3>حالة البوت: <span className={botStatus === 'running' ? 'status-active' : 'status-inactive'}>
-          {botStatus === 'running' ? 'نشط' : 'متوقف'}
+        <h3>État du bot: <span className={botStatus === 'running' ? 'status-active' : 'status-inactive'}>
+          {botStatus === 'running' ? 'Actif' : 'Arrêté'}
         </span></h3>
         
         <div className="action-buttons">
@@ -201,108 +250,107 @@ function App() {
             onClick={activateBot}
             disabled={isLoading || botStatus === 'running'}
           >
-            <FaPlay /> تشغيل
+            <FaPlay /> Démarrer
           </button>
-          
           <button 
             className={`btn btn-stop ${botStatus === 'stopped' ? 'active' : ''}`}
             onClick={stopBot}
             disabled={isLoading || botStatus === 'stopped'}
           >
-            <FaStop /> إيقاف
+            <FaStop /> Arrêter
           </button>
-          
           <button 
             className="btn btn-refresh"
             onClick={fetchInitialData}
             disabled={isLoading}
           >
-            <FaSync /> تحديث
+            <FaSync /> Actualiser
           </button>
         </div>
         
-        <div className="bot-info">
-          <div className="info-item">
-            <span className="info-label">الاستراتيجية المختارة:</span>
-            <span className="info-value">
-              {selectedStrategy || 'لم يتم اختيار استراتيجية'}
-            </span>
-          </div>
-          
-          <div className="info-item">
-            <span className="info-label">عدد الأزواج المختارة:</span>
-            <span className="info-value">
-              {selectedPairs.length} زوج
-            </span>
-          </div>
+        <div className="trading-pairs">
+          <h3>Paires sélectionnées</h3>
+          {selectedPairs.length > 0 ? (
+            <div className="pairs-list">
+              {selectedPairs.map((pair, index) => (
+                <span key={index} className="pair-tag">{pair}</span>
+              ))}
+            </div>
+          ) : (
+            <p className="no-data">Aucune paire sélectionnée</p>
+          )}
         </div>
-      </div>
-      
-      <div className="trading-pairs">
-        <h3>الأزواج المختارة</h3>
-        {selectedPairs.length > 0 ? (
-          <div className="pairs-list">
-            {selectedPairs.map((pair, index) => (
-              <span key={index} className="pair-tag">
-                {pair}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="no-pairs">لم يتم اختيار أي أزواج بعد</p>
-        )}
+        
+        <div className="strategy-info">
+          <h3>Stratégie sélectionnée</h3>
+          {selectedStrategy ? (
+            <p>{selectedStrategy}</p>
+          ) : (
+            <p className="no-data">Aucune stratégie sélectionnée</p>
+          )}
+        </div>
       </div>
     </div>
   );
 
-  // مكون لوحة الإعدادات
+  // Paramètres de trading
   const SettingsPanel = () => (
     <div className="settings-panel">
+      <h2>Paramètres</h2>
+      
       <div className="api-settings">
-        <h3>إعدادات API</h3>
+        <h3>Paramètres API</h3>
         <div className="form-group">
-          <label>Binance API Key:</label>
+          <label>Clé API :</label>
           <input 
             type="password" 
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="أدخل مفتاح API الخاص بك"
+            value={apiKey} 
+            onChange={(e) => setApiKey(e.target.value)} 
+            placeholder="Entrez votre clé API"
           />
         </div>
-        
         <div className="form-group">
-          <label>Binance API Secret:</label>
+          <label>Clé secrète :</label>
           <input 
             type="password" 
-            value={apiSecret}
-            onChange={(e) => setApiSecret(e.target.value)}
-            placeholder="أدخل السر السري لـ API"
+            value={apiSecret} 
+            onChange={(e) => setApiSecret(e.target.value)} 
+            placeholder="Entrez votre clé secrète"
           />
         </div>
-        
+        <button 
+          className="btn btn-primary"
+          onClick={saveApiKeys}
+          disabled={isLoading || !apiKey || !apiSecret}
+        >
+          {isLoading ? 'Enregistrement...' : 'Enregistrer les clés'}
+        </button>
+      </div>
+      
+      <div className="trading-settings">
+        <h3>Paramètres de trading</h3>
         <div className="form-group">
-          <label>اختر الاستراتيجية:</label>
+          <label>Stratégie :</label>
           <select 
-            value={selectedStrategy}
+            value={selectedStrategy} 
             onChange={(e) => setSelectedStrategy(e.target.value)}
-            disabled={botStatus === 'running'}
+            disabled={isLoading}
           >
-            <option value="">-- اختر استراتيجية --</option>
+            <option value="">-- Sélectionnez une stratégie --</option>
             {strategies.map((strategy, index) => (
-              <option key={index} value={strategy.id}>
-                {strategy.name}
-              </option>
+              <option key={index} value={strategy}>{strategy}</option>
             ))}
           </select>
         </div>
         
         <div className="form-group">
-          <label>اختر أزواج التداول:</label>
+          <label>Paires de trading :</label>
           <div className="pairs-selector">
             {tradingPairs.map((pair, index) => (
-              <label key={index} className="pair-checkbox">
-                <input
-                  type="checkbox"
+              <div key={index} className="pair-option">
+                <input 
+                  type="checkbox" 
+                  id={`pair-${index}`} 
                   checked={selectedPairs.includes(pair)}
                   onChange={(e) => {
                     if (e.target.checked) {
@@ -311,60 +359,60 @@ function App() {
                       setSelectedPairs(selectedPairs.filter(p => p !== pair));
                     }
                   }}
-                  disabled={botStatus === 'running'}
+                  disabled={isLoading}
                 />
-                {pair}
-              </label>
+                <label htmlFor={`pair-${index}`}>{pair}</label>
+              </div>
             ))}
           </div>
         </div>
-      </div>
-      
-      <div className="risk-settings">
-        <RiskManagementPanelComponent />
+        
+        <button 
+          className="btn btn-primary"
+          onClick={saveTradingSettings}
+          disabled={isLoading || !selectedStrategy || selectedPairs.length === 0}
+        >
+          {isLoading ? 'Enregistrement...' : 'Enregistrer les paramètres'}
+        </button>
       </div>
     </div>
   );
 
-  // مكون لوحة التنبيهات
+  // Panneau d'alerte
   const AlertsPanel = () => (
     <div className="alerts-panel">
-      <h3>سجل التنبيهات</h3>
-      
+      <h3>Historique des transactions</h3>
       {alerts.length > 0 ? (
         <div className="alerts-list">
           {alerts.map((alert, index) => (
             <div key={index} className={`alert-item ${alert.type}`}>
               <div className="alert-header">
                 <span className="alert-time">
-                  {new Date(alert.timestamp).toLocaleString()}
+                  {new Date(alert.timestamp).toLocaleString('fr-FR')}
                 </span>
                 <span className={`alert-type ${alert.type}`}>
-                  {alert.type === 'buy' ? 'شراء' : 'بيع'}
+                  {alert.type === 'buy' ? 'Achat' : 'Vente'}
                 </span>
               </div>
               <div className="alert-message">{alert.message}</div>
               {alert.pair && (
                 <div className="alert-pair">
-                  الزوج: <strong>{alert.pair}</strong>
+                  Paire: <strong>{alert.pair}</strong>
                 </div>
               )}
             </div>
           ))}
         </div>
       ) : (
-        <div className="no-alerts">
-          لا توجد تنبيهات حتى الآن
-        </div>
+        <div className="no-alerts">Aucune transaction pour le moment</div>
       )}
     </div>
   );
 
   return (
-    <div className="app" dir="rtl">
+    <div className="app">
       <ToastContainer 
-        position="top-left"
-        rtl={true}
+        position="top-right"
         autoClose={5000}
         hideProgressBar={false}
         newestOnTop={false}
@@ -372,65 +420,54 @@ function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark"
-        className="font-tajawal"
       />
+      
       <header className="app-header">
-        <h1>
-          <FaChartLine className="logo-icon" />
-          Power MS Trading Pro
-        </h1>
-        
-        <nav className="main-nav">
+        <h1>Power MS Trading Pro</h1>
+        <div className="header-actions">
           <button 
-            className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+            className={`btn ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
           >
-            <FaChartLine /> لوحة التحكم
+            <FaChartLine /> Tableau de bord
           </button>
-          
           <button 
-            className={`nav-btn ${activeTab === 'settings' ? 'active' : ''}`}
+            className={`btn ${activeTab === 'trades' ? 'active' : ''}`}
+            onClick={() => setActiveTab('trades')}
+          >
+            <FaExchangeAlt /> Transactions
+          </button>
+          <button 
+            className={`btn ${activeTab === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveTab('settings')}
           >
-            <FaCog /> الإعدادات
+            <FaCog /> Paramètres
           </button>
-          
           <button 
-            className={`nav-btn ${activeTab === 'alerts' ? 'active' : ''}`}
-            onClick={() => setActiveTab('alerts')}
+            className={`btn ${activeTab === 'info' ? 'active' : ''}`}
+            onClick={() => setActiveTab('info')}
           >
-            <FaExchangeAlt /> التنبيهات
+            <FaInfoCircle /> À propos
           </button>
-        </nav>
+        </div>
       </header>
       
-      <main className="app-content">
+      <main className="app-main">
         {isLoading ? (
-          <div className="loading-overlay">
-            <div className="spinner"></div>
-            <p>جاري التحميل...</p>
-          </div>
+          <div className="loading">Chargement en cours...</div>
         ) : (
           <>
             {activeTab === 'dashboard' && <DashboardPanel />}
+            {activeTab === 'trades' && <AlertsPanel />}
             {activeTab === 'settings' && <SettingsPanel />}
-            {activeTab === 'alerts' && <AlertsPanel />}
+            {activeTab === 'info' && <InfoPanel />}
           </>
         )}
       </main>
       
-      <ToastContainer 
-        position="top-left"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={true}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <footer className="app-footer">
+        <p>© {new Date().getFullYear()} Power MS Trading Pro. Tous droits réservés.</p>
+      </footer>
     </div>
   );
 }

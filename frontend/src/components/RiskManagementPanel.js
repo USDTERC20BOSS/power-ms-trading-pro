@@ -10,7 +10,7 @@ const RiskManagementPanel = ({ apiBaseUrl }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // جلب إعدادات المخاطرة المحفوظة عند تحميل المكون
+    // Récupérer les paramètres de risque enregistrés lors du chargement du composant
     const fetchRiskSettings = async () => {
       try {
         const response = await fetch(`${apiBaseUrl}/get_settings`);
@@ -24,7 +24,8 @@ const RiskManagementPanel = ({ apiBaseUrl }) => {
           }
         }
       } catch (error) {
-        console.error('Error fetching risk settings:', error);
+        console.error('Erreur lors de la récupération des paramètres de risque:', error);
+        toast.error('Erreur lors du chargement des paramètres de risque');
       }
     };
     
@@ -38,6 +39,7 @@ const RiskManagementPanel = ({ apiBaseUrl }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept-Language': 'fr'
         },
         body: JSON.stringify({
           take_profit: takeProfit,
@@ -49,117 +51,66 @@ const RiskManagementPanel = ({ apiBaseUrl }) => {
       
       const data = await response.json();
       if (response.ok) {
-        toast.success('✅ تم حفظ إعدادات المخاطرة بنجاح');
+        toast.success('Paramètres de risque enregistrés avec succès');
       } else {
-        throw new Error(data.detail || 'فشل في حفظ الإعدادات');
+        throw new Error(data.detail || 'Échec de l\'enregistrement des paramètres');
       }
     } catch (error) {
-      console.error('Error saving risk settings:', error);
-      toast.error(`❌ ${error.message || 'حدث خطأ أثناء حفظ الإعدادات'}`);
+      console.error('Erreur lors de l\'enregistrement des paramètres de risque:', error);
+      toast.error(error.message || 'Une erreur est survenue lors de l\'enregistrement des paramètres');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const renderSlider = (value, setValue, min, max, step, color) => ({
-    background: `linear-gradient(90deg, ${color} ${((value - min) / (max - min)) * 100}%, #444 ${((value - min) / (max - min)) * 100}%)`
-  });
-
   return (
-    <div className="card risk-management">
-      <div className="card-header">
-        <FaChartLine className="icon" />
-        <h3>إدارة المخاطر</h3>
+    <div className="risk-management-panel">
+      <div className="panel-header">
+        <FaChartLine className="header-icon" />
+        <h2>Gestion des Risques</h2>
       </div>
       
-      <div className="card-body">
+      <div className="form-container">
         <div className="form-group">
-          <div className="slider-header">
-            <label>Take Profit: <span className="value">{takeProfit}%</span></label>
-          </div>
-          <div className="slider-container">
-            <input 
-              type="range" 
-              min="0.1" 
-              max="50" 
-              step="0.1" 
-              value={takeProfit} 
-              onChange={(e) => setTakeProfit(parseFloat(e.target.value))}
-              className="slider"
-              style={renderSlider(takeProfit, 0.1, 50, 0.1, 'var(--primary-color)')}
-            />
-            <div className="slider-ticks">
-              {[0.1, 5, 10, 25, 50].map((tick) => (
-                <span 
-                  key={tick} 
-                  className={tick <= takeProfit ? 'active' : ''}
-                  onClick={() => setTakeProfit(tick)}
-                >
-                  {tick}%
-                </span>
-              ))}
-            </div>
-          </div>
+          <label>Objectif de profit (%)</label>
+          <input
+            type="number"
+            value={takeProfit}
+            onChange={(e) => setTakeProfit(Number(e.target.value))}
+            min="0.1"
+            step="0.1"
+            className="form-control"
+          />
+          <small>Pourcentage de profit cible pour chaque transaction</small>
         </div>
-
+        
         <div className="form-group">
-          <div className="slider-header">
-            <label>Stop Loss: <span className="value">{stopLoss}%</span></label>
-          </div>
-          <div className="slider-container">
-            <input 
-              type="range" 
-              min="0.1" 
-              max="5" 
-              step="0.1" 
-              value={stopLoss} 
-              onChange={(e) => setStopLoss(parseFloat(e.target.value))}
-              className="slider"
-              style={renderSlider(stopLoss, 0.1, 5, 0.1, 'var(--danger-color)')}
-            />
-            <div className="slider-ticks">
-              {[0.1, 1, 2, 3, 5].map((tick) => (
-                <span 
-                  key={tick}
-                  className={tick <= stopLoss ? 'active' : ''}
-                  onClick={() => setStopLoss(tick)}
-                >
-                  {tick}%
-                </span>
-              ))}
-            </div>
-          </div>
+          <label>Stop-loss (%)</label>
+          <input
+            type="number"
+            value={stopLoss}
+            onChange={(e) => setStopLoss(Number(e.target.value))}
+            min="0.1"
+            step="0.1"
+            className="form-control"
+          />
+          <small>Pourcentage de perte maximale par rapport au capital</small>
         </div>
-
+        
         <div className="form-group">
-          <div className="slider-header">
-            <label>المخاطرة القصوى لكل صفقة: <span className="value">{maxRisk}%</span></label>
-          </div>
-          <div className="slider-container">
-            <input 
-              type="range" 
-              min="0.1" 
-              max="5" 
-              step="0.1" 
-              value={maxRisk} 
-              onChange={(e) => setMaxRisk(parseFloat(e.target.value))}
-              className="slider"
-              style={renderSlider(maxRisk, 0.1, 5, 0.1, 'var(--secondary-color)')}
-            />
-            <div className="slider-ticks">
-              {[0.1, 1, 2, 3, 5].map((tick) => (
-                <span 
-                  key={tick}
-                  className={tick <= maxRisk ? 'active' : ''}
-                  onClick={() => setMaxRisk(tick)}
-                >
-                  {tick}%
-                </span>
-              ))}
-            </div>
-          </div>
+          <label>Risque maximum (%)</label>
+          <input
+            type="number"
+            value={maxRisk}
+            onChange={(e) => setMaxRisk(Number(e.target.value))}
+            min="0.1"
+            max="100"
+            step="0.1"
+            className="form-control"
+          />
+          <small>Pourcentage maximal de risque sur le capital total</small>
         </div>
-
+        
         <div className="form-group checkbox-group">
           <label className={`custom-checkbox ${trailingStop ? 'checked' : ''}`}>
             <input 
@@ -169,39 +120,42 @@ const RiskManagementPanel = ({ apiBaseUrl }) => {
               hidden
             />
             <span className="checkmark"></span>
-            <span className="label-text">تفعيل التريلينج ستوب</span>
-            <span className="info-icon" title="يسمح بتعديل وقف الخسارة تلقائياً مع تحرك السعر لصالحك">
+            <span className="label-text">Activer le stop-loss suiveur</span>
+            <div className="info-tooltip">
               <FaInfoCircle />
-            </span>
+              <span className="tooltip-text">
+                Lorsqu'il est activé, le stop-loss se déplace avec le prix pour verrouiller les bénéfices
+              </span>
+            </div>
           </label>
         </div>
-
+        
         <button 
           className={`btn btn-primary save-btn ${isLoading ? 'loading' : ''}`} 
           onClick={handleSaveSettings}
           disabled={isLoading}
         >
-          {isLoading ? 'جاري الحفظ...' : 'حفظ إعدادات المخاطرة'}
+          {isLoading ? 'Enregistrement...' : 'Enregistrer les paramètres'}
         </button>
-
+        
         <div className="risk-info">
-          <h4>كيف تعمل إعدادات المخاطرة:</h4>
+          <h4>Fonctionnement des paramètres de risque :</h4>
           <ul>
             <li>
-              <strong>Take Profit ({takeProfit}%):</strong>
-              <span>سيتم إغلاق الصفقة تلقائياً عند تحقيق ربح بنسبة {takeProfit}% من سعر الدخول.</span>
+              <strong>Take Profit ({takeProfit}%) :</strong>
+              <span> La position sera clôturée automatiquement lorsque le profit atteindra {takeProfit}% du prix d'entrée.</span>
             </li>
             <li>
-              <strong>Stop Loss ({stopLoss}%):</strong>
-              <span>سيتم إغلاق الصفقة تلقائياً عند خسارة {stopLoss}% من رأس المال المستثمر.</span>
+              <strong>Stop Loss ({stopLoss}%) :</strong>
+              <span> La position sera clôturée automatiquement en cas de perte de {stopLoss}% du capital investi.</span>
             </li>
             <li>
-              <strong>نسبة المخاطرة ({maxRisk}%):</strong>
-              <span>أقصى مبلغ يمكن خسارته في كل صفقة كنسبة من رأس المال.</span>
+              <strong>Risque maximum ({maxRisk}%) :</strong>
+              <span> Montant maximal pouvant être perdu sur chaque transaction en pourcentage du capital.</span>
             </li>
             <li>
-              <strong>التريلينج ستوب:</strong>
-              <span>يسمح بتعديل وقف الخسارة تلقائياً مع تحرك السعر لصالحك لتأمين الأرباح.</span>
+              <strong>Stop-loss suiveur :</strong>
+              <span> Ajuste automatiquement le niveau du stop-loss pour protéger les bénéfices au fur et à mesure que le prix évolue en votre faveur.</span>
             </li>
           </ul>
         </div>
