@@ -162,3 +162,8 @@ def predict_signal(prices: list):
         return {"signal": "vente", "rsi": last_rsi}
     else:
         return {"signal": "neutre", "rsi": last_rsi}
+
+# إضافة نقطة الدخول الرئيسية لتشغيل الخادم
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
