@@ -1,0 +1,323 @@
+/* Reset et styles de base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
+  --primary-color: #4CAF50;
+  --secondary-color: #2196F3;
+  --danger-color: #f44336;
+  --dark-bg: #121212;
+  --card-bg: #1E1E1E;
+  --text-color: #E0E0E0;
+  --text-muted: #9E9E9E;
+  --border-color: #333;
+}
+
+body {
+  background-color: var(--dark-bg);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+/* En-tête */
+.app-header {
+  background-color: var(--card-bg);
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-content h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.header-icon {
+  font-size: 1.8rem;
+}
+
+.bot-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--danger-color);
+}
+
+.status-indicator.running {
+  background-color: var(--primary-color);
+  box-shadow: 0 0 10px var(--primary-color);
+}
+
+/* Conteneur principal */
+.app-container {
+  max-width: 1400px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* Cartes */
+.dashboard-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-card, .controls-card, .chart-card, .pairs-card, .transactions-card, .api-config-card, .balance-card {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card {
+  margin: 1.5rem 0;
+}
+
+/* Formulaire et champs de saisie */
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: #2d2d2d;
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Boutons */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #43a047;
+}
+
+.btn-success {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+  margin-left: 0.5rem;
+}
+
+.btn-secondary {
+  background-color: #607D8B;
+  color: white;
+  margin-left: 0.5rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Grilles */
+.status-grid, .pairs-grid, .balance-grid, .controls-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.status-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.pairs-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.balance-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.controls-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+/* Cartes d'état */
+.status-item, .pair-item, .balance-item {
+  background-color: #2d2d2d;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.pair-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pair-status {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  background-color: rgba(76, 175, 80, 0.2);
+  color: var(--primary-color);
+}
+
+/* Graphique */
+.chart-container {
+  margin-top: 1rem;
+  height: 300px;
+}
+
+/* Transactions */
+.transactions-list {
+  margin-top: 1rem;
+}
+
+.trade-item {
+  background-color: #2d2d2d;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-left: 4px solid #4CAF50;
+}
+
+.trade-item.sell {
+  border-left-color: #f44336;
+}
+
+.trade-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.trade-pair {
+  font-weight: 500;
+}
+
+.trade-type {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+.trade-type.sell {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.trade-details {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.trade-time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* Message d'erreur */
+.message {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.message.error {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid var(--danger-color);
+  color: #ff8a80;
+}
+
+.message.success {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-left: 4px solid var(--primary-color);
+  color: #a5d6a7;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .dashboard-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .trade-details {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+/* Animation de chargement */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}

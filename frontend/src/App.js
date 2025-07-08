@@ -1,7 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { FaPlay, FaStop, FaSync, FaChartLine, FaExchangeAlt, FaCog, FaInfoCircle } from 'react-icons/fa';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './App.css';
 
 // Base URL للـ API
 const API_BASE_URL = 'https://power-ms-trading-pro-1.onrender.com';
+
+// بيانات تجريبية للرسم البياني
+const sampleData = [
+  { name: 'Jan', profit: 400 },
+  { name: 'Feb', profit: 300 },
+  { name: 'Mar', profit: 600 },
+  { name: 'Apr', profit: 800 },
+  { name: 'May', profit: 500 },
+  { name: 'Jun', profit: 900 },
+];
+
+// صفقات تجريبية
+const sampleTrades = [
+  { id: 1, pair: 'BTC/USDT', type: 'BUY', price: '42,350.25', amount: '0.05', total: '2,117.51', time: '10:30:45' },
+  { id: 2, pair: 'ETH/USDT', type: 'SELL', price: '2,345.67', amount: '0.5', total: '1,172.84', time: '11:15:22' },
+];
 
 function App() {
   const [activationCode, setActivationCode] = useState('');
@@ -12,114 +33,327 @@ function App() {
   const [isActivated, setIsActivated] = useState(false);
   const [botStatus, setBotStatus] = useState('stopped');
   const [balances, setBalances] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const activate = async () => {
-    const res = await fetch(`${API_BASE_URL}/activate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ activation_code: activationCode })
-    });
-    const data = await res.json();
-    setMessage(data.message || data.detail);
-    if (res.ok) setIsActivated(true);
-  };
-
-  const fetchSettings = async () => {
-    const res = await fetch(`${API_BASE_URL}/get_settings`);
-    const data = await res.json();
-    setApiKey(data.api_key || '');
-    setApiSecret(data.api_secret || '');
-    setSettings(data.settings || { pairs: [], strategies: [] });
-    setBotStatus(data.bot_status || 'stopped');
-  };
-
-  useEffect(() => {
-    if (isActivated) {
-      fetchSettings();
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/activate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activation_code: activationCode })
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        setIsActivated(true);
+        setMessage('Compte activé avec succès!');
+        toast.success('Compte activé avec succès!');
+      } else {
+        throw new Error(data.detail || 'Erreur d\'activation');
+      }
+    } catch (error) {
+      console.error('Erreur d\'activation:', error);
+      setMessage(`Erreur: ${error.message}`);
+      toast.error(`Erreur d'activation: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
-  }, [isActivated]);
+  };
 
   const updateSettings = async () => {
-    const res = await fetch(`${API_BASE_URL}/update_settings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_key: apiKey, api_secret: apiSecret, settings })
-    });
-    const data = await res.json();
-    setMessage(data.message || data.detail);
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/update_settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          api_key: apiKey,
+          api_secret: apiSecret,
+        })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setMessage('Paramètres mis à jour avec succès');
+        toast.success('Paramètres mis à jour avec succès');
+      } else {
+        throw new Error(data.detail || 'Erreur de mise à jour des paramètres');
+      }
+    } catch (error) {
+      console.error('Erreur de mise à jour des paramètres:', error);
+      setMessage(`Erreur: ${error.message}`);
+      toast.error(`Erreur: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const updateBotStatus = async (status) => {
-    const res = await fetch(`${API_BASE_URL}/bot_status`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
-    });
-    const data = await res.json();
-    setMessage(data.message || data.detail);
-    setBotStatus(status);
+    setIsLoading(true);
+    setMessage(`Mise à jour du statut en cours...`);
+    try {
+      const res = await fetch(`${API_BASE_URL}/bot_status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        setBotStatus(status);
+        setMessage(`Bot ${status === 'running' ? 'démarré' : 'arrêté'} avec succès`);
+        toast.success(`Bot ${status === 'running' ? 'démarré' : 'arrêté'} avec succès`);
+      } else {
+        throw new Error(data.detail || 'Erreur de mise à jour du statut');
+      }
+    } catch (error) {
+      console.error('Erreur de mise à jour du statut:', error);
+      setMessage(`Erreur: ${error.message}`);
+      toast.error(`Erreur: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const fetchBalance = async () => {
-    const res = await fetch(`${API_BASE_URL}/binance_balance`);
-    if (!res.ok) {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/binance_balance`);
       const data = await res.json();
-      setMessage(data.detail || 'Erreur lors de la récupération du solde');
-      return;
+      
+      if (res.ok) {
+        setBalances(data.balances || []);
+        toast.success('Solde mis à jour avec succès');
+      } else {
+        throw new Error(data.detail || 'Erreur de récupération du solde');
+      }
+    } catch (error) {
+      console.error('Erreur de récupération du solde:', error);
+      setMessage(`Erreur: ${error.message}`);
+      toast.error(`Erreur: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
-    const data = await res.json();
-    setBalances(data);
-    setMessage('');
   };
 
+  useEffect(() => {
+    // Vérifier l'état d'activation au chargement
+    const checkActivation = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/check_activation`);
+        const data = await res.json();
+        if (res.ok && data.activated) {
+          setIsActivated(true);
+          if (data.api_key) setApiKey(data.api_key);
+          if (data.api_secret) setApiSecret(data.api_secret);
+        }
+      } catch (error) {
+        console.error('Erreur de vérification d\'activation:', error);
+      }
+    };
+    
+    checkActivation();
+  }, []);
+
   return (
-    <div style={{ backgroundColor: '#000', color: 'gold', padding: '20px', minHeight: '100vh', fontFamily: 'Arial' }}>
-      <h1>Power MS Trading Pro</h1>
-      {!isActivated ? (
-        <div>
-          <input
-            type="text"
-            placeholder="Code d'activation"
-            value={activationCode}
-            onChange={(e) => setActivationCode(e.target.value)}
-            style={{ padding: '10px', fontSize: '16px' }}
-          />
-          <button onClick={activate} style={{ marginLeft: '10px', padding: '10px' }}>Activer</button>
+    <div className="app">
+      <ToastContainer position="top-right" autoClose={5000} />
+      
+      <header className="app-header">
+        <div className="header-content">
+          <h1><FaChartLine className="header-icon" /> Power MS Trading Pro</h1>
+          <div className="bot-status">
+            <span className={`status-indicator ${botStatus === 'running' ? 'running' : 'stopped'}`}></span>
+            <span>Bot: {botStatus === 'running' ? 'En cours' : 'Arrêté'}</span>
+          </div>
         </div>
-      ) : (
-        <div>
-          <h3>Paramètres</h3>
-          <input
-            type="text"
-            placeholder="API Key Binance"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            style={{ padding: '10px', fontSize: '16px', width: '300px' }}
-          /><br/><br/>
-          <input
-            type="text"
-            placeholder="API Secret Binance"
-            value={apiSecret}
-            onChange={(e) => setApiSecret(e.target.value)}
-            style={{ padding: '10px', fontSize: '16px', width: '300px' }}
-          /><br/><br/>
-          <button onClick={updateSettings} style={{ padding: '10px' }}>Enregistrer</button>
-          <br /><br />
-          <h3>Status du Bot: {botStatus}</h3>
-          <button onClick={() => updateBotStatus('running')} style={{ marginRight: '10px' }}>Démarrer</button>
-          <button onClick={() => updateBotStatus('stopped')}>Arrêter</button>
-          <br /><br />
-          <button onClick={fetchBalance}>Afficher Solde Binance</button>
-          <ul>
-            {balances.map(b => (
-              <li key={b.asset}>
-                {b.asset}: Libre: {b.free} - Bloqué: {b.locked}
-              </li>
-            ))}
-          </ul>
-          <p>{message}</p>
-        </div>
-      )}
+      </header>
+
+      <div className="app-container">
+        {!isActivated ? (
+          <div className="activation-container">
+            <h2><FaInfoCircle /> Activation Requise</h2>
+            <div className="input-group">
+              <input
+                type="text"
+                placeholder="Entrez le code d'activation"
+                value={activationCode}
+                onChange={(e) => setActivationCode(e.target.value)}
+                className="form-input"
+              />
+              <button 
+                onClick={activate} 
+                className="btn btn-primary"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Traitement...' : 'Activer'}
+              </button>
+            </div>
+            {message && <p className={`message ${message.includes('Erreur') ? 'error' : 'success'}`}>{message}</p>}
+          </div>
+        ) : (
+          <div className="dashboard">
+            {/* Section Statut et Contrôles */}
+            <div className="dashboard-row">
+              <div className="status-card">
+                <h3><FaInfoCircle /> Statut du Compte</h3>
+                <div className="status-grid">
+                  <div className="status-item">
+                    <span className="label">Solde Total (USDT)</span>
+                    <span className="value">5,423.76</span>
+                  </div>
+                  <div className="status-item">
+                    <span className="label">Profit du Jour</span>
+                    <span className="value profit">+$124.50 (2.35%)</span>
+                  </div>
+                  <div className="status-item">
+                    <span className="label">Nombre de Paires</span>
+                    <span className="value">8</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="controls-card">
+                <h3><FaCog /> Contrôles</h3>
+                <div className="controls-grid">
+                  <button 
+                    onClick={() => updateBotStatus('running')} 
+                    className={`control-btn ${botStatus === 'running' ? 'active' : ''}`}
+                    disabled={botStatus === 'running' || isLoading}
+                  >
+                    <FaPlay /> Démarrer
+                  </button>
+                  <button 
+                    onClick={() => updateBotStatus('stopped')}
+                    className={`control-btn stop ${botStatus === 'stopped' ? 'active' : ''}`}
+                    disabled={botStatus === 'stopped' || isLoading}
+                  >
+                    <FaStop /> Arrêter
+                  </button>
+                  <button 
+                    onClick={fetchBalance}
+                    className="control-btn refresh"
+                    disabled={isLoading}
+                  >
+                    <FaSync /> Actualiser
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Section Graphique de Performance */}
+            <div className="chart-card">
+              <h3><FaChartLine /> Performance du Portefeuille</h3>
+              <div className="chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={sampleData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="profit" stroke="#4CAF50" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Section Paires et Transactions */}
+            <div className="dashboard-row">
+              {/* Paires Actives */}
+              <div className="pairs-card">
+                <h3><FaExchangeAlt /> Paires Actives</h3>
+                <div className="pairs-grid">
+                  {['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT'].map((pair) => (
+                    <div key={pair} className="pair-item">
+                      <span className="pair-name">{pair}</span>
+                      <span className="pair-status active">Actif</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dernières Transactions */}
+              <div className="transactions-card">
+                <h3>Dernières Transactions</h3>
+                <div className="transactions-list">
+                  {sampleTrades.map((trade) => (
+                    <div key={trade.id} className={`trade-item ${trade.type.toLowerCase()}`}>
+                      <div className="trade-header">
+                        <span className="trade-pair">{trade.pair}</span>
+                        <span className={`trade-type ${trade.type.toLowerCase()}`}>
+                          {trade.type}
+                        </span>
+                      </div>
+                      <div className="trade-details">
+                        <span>Prix: {trade.price}</span>
+                        <span>Montant: {trade.amount}</span>
+                        <span>Total: {trade.total}</span>
+                      </div>
+                      <div className="trade-time">{trade.time}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Section Configuration API */}
+            <div className="api-config-card">
+              <h3><FaCog /> Configuration API</h3>
+              <div className="input-group">
+                <label>Clé API Binance</label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Entrez votre clé API Binance"
+                  className="form-input"
+                />
+              </div>
+              <div className="input-group">
+                <label>Secret API Binance</label>
+                <input
+                  type="password"
+                  value={apiSecret}
+                  onChange={(e) => setApiSecret(e.target.value)}
+                  placeholder="Entrez votre secret API Binance"
+                  className="form-input"
+                />
+              </div>
+              <button 
+                onClick={updateSettings} 
+                className="btn btn-primary"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Enregistrement...' : 'Enregistrer les paramètres'}
+              </button>
+            </div>
+
+            {/* Section Solde */}
+            <div className="balance-card">
+              <h3>Solde du Portefeuille</h3>
+              <div className="balance-grid">
+                {balances.length > 0 ? (
+                  balances.map((balance) => (
+                    <div key={balance.asset} className="balance-item">
+                      <span className="asset">{balance.asset}</span>
+                      <div className="amounts">
+                        <span className="free">Libre: {parseFloat(balance.free).toFixed(8)}</span>
+                        {balance.locked > 0 && (
+                          <span className="locked">Verrouillé: {parseFloat(balance.locked).toFixed(8)}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="no-balance">Aucun solde disponible</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
